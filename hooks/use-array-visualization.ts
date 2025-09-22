@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useCallback, useRef } from "react"
-import type { ArrayState, AnimationStep } from "@/lib/types"
+import { useState, useCallback, useRef } from "react";
+import type { ArrayState, AnimationStep } from "@/lib/types";
 
 export function useArrayVisualization() {
   const [state, setState] = useState<ArrayState>({
@@ -13,15 +13,15 @@ export function useArrayVisualization() {
     isAnimating: false,
     currentStep: 0,
     totalSteps: 0,
-  })
+  });
 
-  const animationSteps = useRef<AnimationStep[]>([])
-  const animationTimeoutRef = useRef<NodeJS.Timeout>()
+  const animationSteps = useRef<AnimationStep[]>([]);
+  const animationTimeoutRef = useRef<NodeJS.Timeout>();
 
   const setElements = useCallback((elements: number[]) => {
-    console.log("setElements called with:", elements)
+    console.log("setElements called with:", elements);
     setState((prev) => {
-      console.log("Previous state:", prev.elements)
+      console.log("Previous state:", prev.elements);
       const newState = {
         ...prev,
         elements: [...elements],
@@ -33,32 +33,38 @@ export function useArrayVisualization() {
         totalSteps: 0,
         // Force re-render by adding a timestamp
         lastUpdated: Date.now(),
-      }
-      console.log("New state:", newState.elements)
-      return newState
-    })
-    animationSteps.current = []
-  }, [])
+      };
+      console.log("New state:", newState.elements);
+      return newState;
+    });
+    animationSteps.current = [];
+  }, []);
 
   const generateRandomArray = useCallback(() => {
-    const size = Math.floor(Math.random() * 8) + 5 // 5-12 elements
-    const elements = Array.from({ length: size }, () => Math.floor(Math.random() * 99) + 1)
-    setElements(elements)
-  }, [setElements])
+    const size = Math.floor(Math.random() * 8) + 5; // 5-12 elements
+    const elements = Array.from(
+      { length: size },
+      () => Math.floor(Math.random() * 99) + 1
+    );
+    setElements(elements);
+  }, [setElements]);
 
   const setArraySize = useCallback(
     (size: number) => {
-      const elements = Array.from({ length: size }, () => Math.floor(Math.random() * 99) + 1)
-      setElements(elements)
+      const elements = Array.from(
+        { length: size },
+        () => Math.floor(Math.random() * 99) + 1
+      );
+      setElements(elements);
     },
-    [setElements],
-  )
+    [setElements]
+  );
 
   // Animation execution functions
   const executeLinearSearch = useCallback(
     (target: number, speed = 1) => {
-      const steps: AnimationStep[] = []
-      const elements = state.elements
+      const steps: AnimationStep[] = [];
+      const elements = state.elements;
 
       for (let i = 0; i < elements.length; i++) {
         steps.push({
@@ -69,7 +75,7 @@ export function useArrayVisualization() {
           currentIndex: i,
           comparingIndices: [i],
           searchTarget: target,
-        })
+        });
 
         if (elements[i] === target) {
           steps.push({
@@ -80,8 +86,8 @@ export function useArrayVisualization() {
             currentIndex: i,
             comparingIndices: [],
             searchTarget: target,
-          })
-          break
+          });
+          break;
         }
       }
 
@@ -94,21 +100,25 @@ export function useArrayVisualization() {
           currentIndex: -1,
           comparingIndices: [],
           searchTarget: target,
-        })
+        });
       }
 
-      animationSteps.current = steps
-      setState((prev) => ({ ...prev, totalSteps: steps.length, searchTarget: target }))
-      return steps
+      animationSteps.current = steps;
+      setState((prev) => ({
+        ...prev,
+        totalSteps: steps.length,
+        searchTarget: target,
+      }));
+      return steps;
     },
-    [state.elements],
-  )
+    [state.elements]
+  );
 
   const executeBubbleSort = useCallback(
     (speed = 1) => {
-      const steps: AnimationStep[] = []
-      const arr = [...state.elements]
-      const n = arr.length
+      const steps: AnimationStep[] = [];
+      const arr = [...state.elements];
+      const n = arr.length;
 
       for (let i = 0; i < n - 1; i++) {
         for (let j = 0; j < n - i - 1; j++) {
@@ -121,7 +131,7 @@ export function useArrayVisualization() {
             currentIndex: -1,
             comparingIndices: [j, j + 1],
             elements: [...arr],
-          })
+          });
 
           if (arr[j] > arr[j + 1]) {
             // Swap step
@@ -133,21 +143,23 @@ export function useArrayVisualization() {
               currentIndex: -1,
               comparingIndices: [j, j + 1],
               elements: [...arr],
-            })
+            });
 
             // Perform swap
-            ;[arr[j], arr[j + 1]] = [arr[j + 1], arr[j]]
+            [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
 
             // Show result after swap
             steps.push({
               type: "swap",
               indices: [j, j + 1],
-              description: `Swapped! New positions: ${arr[j]} and ${arr[j + 1]}`,
+              description: `Swapped! New positions: ${arr[j]} and ${
+                arr[j + 1]
+              }`,
               line: 13 + j,
               currentIndex: -1,
               comparingIndices: [],
               elements: [...arr],
-            })
+            });
           }
         }
 
@@ -155,13 +167,15 @@ export function useArrayVisualization() {
         steps.push({
           type: "sort",
           indices: [n - 1 - i],
-          description: `Element at position ${n - 1 - i} is now in correct position`,
+          description: `Element at position ${
+            n - 1 - i
+          } is now in correct position`,
           line: 15,
           currentIndex: -1,
           comparingIndices: [],
           sortedIndices: Array.from({ length: i + 1 }, (_, k) => n - 1 - k),
           elements: [...arr],
-        })
+        });
       }
 
       // Mark all as sorted
@@ -174,23 +188,23 @@ export function useArrayVisualization() {
         comparingIndices: [],
         sortedIndices: Array.from({ length: n }, (_, i) => i),
         elements: [...arr],
-      })
+      });
 
-      animationSteps.current = steps
-      setState((prev) => ({ ...prev, totalSteps: steps.length }))
-      return steps
+      animationSteps.current = steps;
+      setState((prev) => ({ ...prev, totalSteps: steps.length }));
+      return steps;
     },
-    [state.elements],
-  )
+    [state.elements]
+  );
 
   const executeSelectionSort = useCallback(
     (speed = 1) => {
-      const steps: AnimationStep[] = []
-      const arr = [...state.elements]
-      const n = arr.length
+      const steps: AnimationStep[] = [];
+      const arr = [...state.elements];
+      const n = arr.length;
 
       for (let i = 0; i < n - 1; i++) {
-        let minIndex = i
+        let minIndex = i;
 
         steps.push({
           type: "highlight",
@@ -200,7 +214,7 @@ export function useArrayVisualization() {
           currentIndex: i,
           comparingIndices: [],
           elements: [...arr],
-        })
+        });
 
         for (let j = i + 1; j < n; j++) {
           steps.push({
@@ -211,10 +225,10 @@ export function useArrayVisualization() {
             currentIndex: i,
             comparingIndices: [j, minIndex],
             elements: [...arr],
-          })
+          });
 
           if (arr[j] < arr[minIndex]) {
-            minIndex = j
+            minIndex = j;
             steps.push({
               type: "highlight",
               indices: [minIndex],
@@ -223,7 +237,7 @@ export function useArrayVisualization() {
               currentIndex: i,
               comparingIndices: [minIndex],
               elements: [...arr],
-            })
+            });
           }
         }
 
@@ -236,10 +250,10 @@ export function useArrayVisualization() {
             currentIndex: i,
             comparingIndices: [i, minIndex],
             elements: [...arr],
-          })
+          });
 
           // Perform swap
-          ;[arr[i], arr[minIndex]] = [arr[minIndex], arr[i]]
+          [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
         }
 
         steps.push({
@@ -251,7 +265,7 @@ export function useArrayVisualization() {
           comparingIndices: [],
           sortedIndices: Array.from({ length: i + 1 }, (_, k) => k),
           elements: [...arr],
-        })
+        });
       }
 
       steps.push({
@@ -263,24 +277,24 @@ export function useArrayVisualization() {
         comparingIndices: [],
         sortedIndices: Array.from({ length: n }, (_, i) => i),
         elements: [...arr],
-      })
+      });
 
-      animationSteps.current = steps
-      setState((prev) => ({ ...prev, totalSteps: steps.length }))
-      return steps
+      animationSteps.current = steps;
+      setState((prev) => ({ ...prev, totalSteps: steps.length }));
+      return steps;
     },
-    [state.elements],
-  )
+    [state.elements]
+  );
 
   const executeInsertionSort = useCallback(
     (speed = 1) => {
-      const steps: AnimationStep[] = []
-      const arr = [...state.elements]
-      const n = arr.length
+      const steps: AnimationStep[] = [];
+      const arr = [...state.elements];
+      const n = arr.length;
 
       for (let i = 1; i < n; i++) {
-        const key = arr[i]
-        let j = i - 1
+        const key = arr[i];
+        let j = i - 1;
 
         steps.push({
           type: "highlight",
@@ -290,7 +304,7 @@ export function useArrayVisualization() {
           currentIndex: i,
           comparingIndices: [],
           elements: [...arr],
-        })
+        });
 
         while (j >= 0 && arr[j] > key) {
           steps.push({
@@ -301,10 +315,10 @@ export function useArrayVisualization() {
             currentIndex: i,
             comparingIndices: [j, j + 1],
             elements: [...arr],
-          })
+          });
 
-          arr[j + 1] = arr[j]
-          j = j - 1
+          arr[j + 1] = arr[j];
+          j = j - 1;
 
           steps.push({
             type: "swap",
@@ -314,10 +328,10 @@ export function useArrayVisualization() {
             currentIndex: i,
             comparingIndices: [],
             elements: [...arr],
-          })
+          });
         }
 
-        arr[j + 1] = key
+        arr[j + 1] = key;
 
         steps.push({
           type: "sort",
@@ -328,7 +342,7 @@ export function useArrayVisualization() {
           comparingIndices: [],
           sortedIndices: Array.from({ length: i + 1 }, (_, k) => k),
           elements: [...arr],
-        })
+        });
       }
 
       steps.push({
@@ -340,22 +354,22 @@ export function useArrayVisualization() {
         comparingIndices: [],
         sortedIndices: Array.from({ length: n }, (_, i) => i),
         elements: [...arr],
-      })
+      });
 
-      animationSteps.current = steps
-      setState((prev) => ({ ...prev, totalSteps: steps.length }))
-      return steps
+      animationSteps.current = steps;
+      setState((prev) => ({ ...prev, totalSteps: steps.length }));
+      return steps;
     },
-    [state.elements],
-  )
+    [state.elements]
+  );
 
   const executeBinarySearch = useCallback(
     (target: number, speed = 1) => {
-      const steps: AnimationStep[] = []
-      const arr = [...state.elements].sort((a, b) => a - b) // Sort for binary search
-      const n = arr.length
-      let left = 0
-      let right = n - 1
+      const steps: AnimationStep[] = [];
+      const arr = [...state.elements].sort((a, b) => a - b); // Sort for binary search
+      const n = arr.length;
+      let left = 0;
+      let right = n - 1;
 
       steps.push({
         type: "highlight",
@@ -366,10 +380,10 @@ export function useArrayVisualization() {
         comparingIndices: [],
         searchTarget: target,
         elements: [...arr],
-      })
+      });
 
       while (left <= right) {
-        const mid = Math.floor((left + right) / 2)
+        const mid = Math.floor((left + right) / 2);
 
         steps.push({
           type: "compare",
@@ -380,7 +394,7 @@ export function useArrayVisualization() {
           comparingIndices: [mid],
           searchTarget: target,
           elements: [...arr],
-        })
+        });
 
         if (arr[mid] === target) {
           steps.push({
@@ -392,8 +406,8 @@ export function useArrayVisualization() {
             comparingIndices: [],
             searchTarget: target,
             elements: [...arr],
-          })
-          break
+          });
+          break;
         }
 
         if (arr[mid] < target) {
@@ -406,8 +420,8 @@ export function useArrayVisualization() {
             comparingIndices: [],
             searchTarget: target,
             elements: [...arr],
-          })
-          left = mid + 1
+          });
+          left = mid + 1;
         } else {
           steps.push({
             type: "highlight",
@@ -418,8 +432,8 @@ export function useArrayVisualization() {
             comparingIndices: [],
             searchTarget: target,
             elements: [...arr],
-          })
-          right = mid - 1
+          });
+          right = mid - 1;
         }
       }
 
@@ -433,28 +447,33 @@ export function useArrayVisualization() {
           comparingIndices: [],
           searchTarget: target,
           elements: [...arr],
-        })
+        });
       }
 
-      animationSteps.current = steps
-      setState((prev) => ({ ...prev, totalSteps: steps.length, searchTarget: target, elements: arr }))
-      return steps
+      animationSteps.current = steps;
+      setState((prev) => ({
+        ...prev,
+        totalSteps: steps.length,
+        searchTarget: target,
+        elements: arr,
+      }));
+      return steps;
     },
-    [state.elements],
-  )
+    [state.elements]
+  );
 
   const playAnimation = useCallback((speed = 1) => {
-    if (animationSteps.current.length === 0) return
+    if (animationSteps.current.length === 0) return;
 
-    setState((prev) => ({ ...prev, isAnimating: true, currentStep: 0 }))
+    setState((prev) => ({ ...prev, isAnimating: true, currentStep: 0 }));
 
     const playStep = (stepIndex: number) => {
       if (stepIndex >= animationSteps.current.length) {
-        setState((prev) => ({ ...prev, isAnimating: false }))
-        return
+        setState((prev) => ({ ...prev, isAnimating: false }));
+        return;
       }
 
-      const step = animationSteps.current[stepIndex]
+      const step = animationSteps.current[stepIndex];
 
       setState((prev) => ({
         ...prev,
@@ -464,25 +483,28 @@ export function useArrayVisualization() {
         sortedIndices: step.sortedIndices ?? prev.sortedIndices,
         elements: step.elements ?? prev.elements,
         searchTarget: step.searchTarget ?? prev.searchTarget,
-      }))
+      }));
 
-      const delay = 1000 / speed // Base delay of 1 second divided by speed
-      animationTimeoutRef.current = setTimeout(() => playStep(stepIndex + 1), delay)
-    }
+      const delay = 1000 / speed; // Base delay of 1 second divided by speed
+      animationTimeoutRef.current = setTimeout(
+        () => playStep(stepIndex + 1),
+        delay
+      );
+    };
 
-    playStep(0)
-  }, [])
+    playStep(0);
+  }, []);
 
   const stopAnimation = useCallback(() => {
     if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current)
+      clearTimeout(animationTimeoutRef.current);
     }
-    setState((prev) => ({ ...prev, isAnimating: false }))
-  }, [])
+    setState((prev) => ({ ...prev, isAnimating: false }));
+  }, []);
 
   const stepForward = useCallback(() => {
     if (state.currentStep < animationSteps.current.length) {
-      const step = animationSteps.current[state.currentStep]
+      const step = animationSteps.current[state.currentStep];
       setState((prev) => ({
         ...prev,
         currentStep: prev.currentStep + 1,
@@ -491,13 +513,15 @@ export function useArrayVisualization() {
         sortedIndices: step.sortedIndices ?? prev.sortedIndices,
         elements: step.elements ?? prev.elements,
         searchTarget: step.searchTarget ?? prev.searchTarget,
-      }))
+      }));
     }
-  }, [state.currentStep])
+  }, [state.currentStep]);
 
   const stepBackward = useCallback(() => {
     if (state.currentStep > 0) {
-      const step = animationSteps.current[state.currentStep - 2] || animationSteps.current[0]
+      const step =
+        animationSteps.current[state.currentStep - 2] ||
+        animationSteps.current[0];
       setState((prev) => ({
         ...prev,
         currentStep: prev.currentStep - 1,
@@ -506,13 +530,13 @@ export function useArrayVisualization() {
         sortedIndices: step.sortedIndices ?? [],
         elements: step.elements ?? prev.elements,
         searchTarget: step.searchTarget,
-      }))
+      }));
     }
-  }, [state.currentStep])
+  }, [state.currentStep]);
 
   const reset = useCallback(() => {
     if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current)
+      clearTimeout(animationTimeoutRef.current);
     }
     setState((prev) => ({
       ...prev,
@@ -522,28 +546,244 @@ export function useArrayVisualization() {
       searchTarget: undefined,
       isAnimating: false,
       currentStep: 0,
-    }))
-    animationSteps.current = []
-  }, [])
+    }));
+    animationSteps.current = [];
+  }, []);
 
-  const executeBasicOperation = useCallback((operation: string) => {
-    const steps: AnimationStep[] = []
-    
-    // Create a simple animation step for basic operations
-    steps.push({
-      type: "highlight",
-      indices: Array.from({ length: state.elements.length }, (_, i) => i),
-      description: `Executing ${operation} operation`,
-      line: 1,
-      currentIndex: -1,
-      comparingIndices: [],
-      elements: [...state.elements],
-    })
+  const executeInsertElement = useCallback(
+    (position: number, value: number) => {
+      const steps: AnimationStep[] = [];
+      const arr = [...state.elements];
+      const newSize = arr.length + 1;
 
-    animationSteps.current = steps
-    setState((prev) => ({ ...prev, totalSteps: steps.length }))
-    return steps
-  }, [state.elements])
+      // Step 1: Show current array
+      steps.push({
+        type: "highlight",
+        indices: Array.from({ length: arr.length }, (_, i) => i),
+        description: `Current array before insertion`,
+        line: 1,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      // Step 2: Highlight insertion position
+      steps.push({
+        type: "highlight",
+        indices: [position],
+        description: `Inserting ${value} at position ${position}`,
+        line: 5,
+        currentIndex: position,
+        comparingIndices: [position],
+        elements: [...arr],
+      });
+
+      // Step 3: Show shifting elements to the right
+      for (let i = arr.length - 1; i >= position; i--) {
+        steps.push({
+          type: "compare",
+          indices: [i, i + 1],
+          description: `Shifting element ${arr[i]} from position ${i} to ${
+            i + 1
+          }`,
+          line: 8 + (arr.length - 1 - i),
+          currentIndex: i,
+          comparingIndices: [i, i + 1],
+          elements: [...arr],
+        });
+      }
+
+      // Step 4: Perform the actual insertion
+      for (let i = arr.length; i > position; i--) {
+        arr[i] = arr[i - 1];
+      }
+      arr[position] = value;
+
+      steps.push({
+        type: "swap",
+        indices: [position],
+        description: `Inserted ${value} at position ${position}`,
+        line: 12,
+        currentIndex: position,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      // Step 5: Show final result
+      steps.push({
+        type: "highlight",
+        indices: Array.from({ length: newSize }, (_, i) => i),
+        description: `Insertion completed! New array size: ${newSize}`,
+        line: 15,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      animationSteps.current = steps;
+      setState((prev) => ({ ...prev, totalSteps: steps.length }));
+      return steps;
+    },
+    [state.elements]
+  );
+
+  const executeDeleteElement = useCallback(
+    (position: number) => {
+      const steps: AnimationStep[] = [];
+      const arr = [...state.elements];
+      const deletedValue = arr[position];
+
+      // Step 1: Show current array
+      steps.push({
+        type: "highlight",
+        indices: Array.from({ length: arr.length }, (_, i) => i),
+        description: `Current array before deletion`,
+        line: 1,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      // Step 2: Highlight element to be deleted
+      steps.push({
+        type: "highlight",
+        indices: [position],
+        description: `Deleting element ${deletedValue} at position ${position}`,
+        line: 5,
+        currentIndex: position,
+        comparingIndices: [position],
+        elements: [...arr],
+      });
+
+      // Step 3: Show shifting elements to the left
+      for (let i = position; i < arr.length - 1; i++) {
+        steps.push({
+          type: "compare",
+          indices: [i, i + 1],
+          description: `Shifting element ${arr[i + 1]} from position ${
+            i + 1
+          } to ${i}`,
+          line: 8 + (i - position),
+          currentIndex: i,
+          comparingIndices: [i, i + 1],
+          elements: [...arr],
+        });
+      }
+
+      // Step 4: Perform the actual deletion
+      for (let i = position; i < arr.length - 1; i++) {
+        arr[i] = arr[i + 1];
+      }
+      arr.pop(); // Remove last element
+
+      steps.push({
+        type: "swap",
+        indices: [position],
+        description: `Deleted ${deletedValue} from position ${position}`,
+        line: 12,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      // Step 5: Show final result
+      steps.push({
+        type: "highlight",
+        indices: Array.from({ length: arr.length }, (_, i) => i),
+        description: `Deletion completed! New array size: ${arr.length}`,
+        line: 15,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      animationSteps.current = steps;
+      setState((prev) => ({ ...prev, totalSteps: steps.length }));
+      return steps;
+    },
+    [state.elements]
+  );
+
+  const executeUpdateElement = useCallback(
+    (position: number, newValue: number) => {
+      const steps: AnimationStep[] = [];
+      const arr = [...state.elements];
+      const oldValue = arr[position];
+
+      // Step 1: Show current array
+      steps.push({
+        type: "highlight",
+        indices: Array.from({ length: arr.length }, (_, i) => i),
+        description: `Current array before update`,
+        line: 1,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      // Step 2: Highlight element to be updated
+      steps.push({
+        type: "highlight",
+        indices: [position],
+        description: `Updating element at position ${position} from ${oldValue} to ${newValue}`,
+        line: 5,
+        currentIndex: position,
+        comparingIndices: [position],
+        elements: [...arr],
+      });
+
+      // Step 3: Perform the update
+      arr[position] = newValue;
+
+      steps.push({
+        type: "swap",
+        indices: [position],
+        description: `Updated element at position ${position} to ${newValue}`,
+        line: 8,
+        currentIndex: position,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      // Step 4: Show final result
+      steps.push({
+        type: "highlight",
+        indices: Array.from({ length: arr.length }, (_, i) => i),
+        description: `Update completed!`,
+        line: 10,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...arr],
+      });
+
+      animationSteps.current = steps;
+      setState((prev) => ({ ...prev, totalSteps: steps.length }));
+      return steps;
+    },
+    [state.elements]
+  );
+
+  const executeBasicOperation = useCallback(
+    (operation: string) => {
+      const steps: AnimationStep[] = [];
+
+      // Create a simple animation step for basic operations
+      steps.push({
+        type: "highlight",
+        indices: Array.from({ length: state.elements.length }, (_, i) => i),
+        description: `Executing ${operation} operation`,
+        line: 1,
+        currentIndex: -1,
+        comparingIndices: [],
+        elements: [...state.elements],
+      });
+
+      animationSteps.current = steps;
+      setState((prev) => ({ ...prev, totalSteps: steps.length }));
+      return steps;
+    },
+    [state.elements]
+  );
 
   return {
     ...state,
@@ -555,11 +795,14 @@ export function useArrayVisualization() {
     executeBubbleSort,
     executeSelectionSort,
     executeInsertionSort,
+    executeInsertElement,
+    executeDeleteElement,
+    executeUpdateElement,
     executeBasicOperation,
     playAnimation,
     stopAnimation,
     stepForward,
     stepBackward,
     reset,
-  }
+  };
 }

@@ -6,7 +6,7 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Interactive Array Visualization Tool",
+  title: "Inte ractive Array Visualization Tool",
   description: "Educational web application for learning array data structures and algorithms",
     generator: 'v0.dev'
 }
